@@ -1,0 +1,46 @@
+name: ai-content-studio
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: studio
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studio_local}
+      POSTGRES_DB: studio
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/001-vector.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studio -d studio"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+  temporal:
+    image: temporalio/temporal:1.5.1
+    profiles: ["orchestration"]
+    environment:
+      NO_PROXY: "${NO_PROXY:-localhost,127.0.0.1},0.0.0.0,temporal"
+      no_proxy: "${no_proxy:-localhost,127.0.0.1},0.0.0.0,temporal"
+    command:
+      [
+        "server",
+        "start-dev",
+        "--ip",
+        "0.0.0.0",
+        "--ui-ip",
+        "0.0.0.0",
+        "--db-filename",
+        "/home/temporal/temporal.db",
+      ]
+    ports:
+      - "127.0.0.1:7233:7233"
+      - "127.0.0.1:8233:8233"
+    volumes:
+      - temporal_home:/home/temporal
+
+volumes:
+  postgres_data:
+  temporal_home:

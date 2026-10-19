@@ -1,0 +1,48 @@
+name: Checks
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: studio
+          POSTGRES_PASSWORD: studio_test
+          POSTGRES_DB: studio_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U studio -d studio_test"
+          --health-interval 5s --health-timeout 3s --health-retries 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          version: "0.12.23"
+      - run: uv python install 3.12
+      - run: uv sync --directory apps/api --locked --python 3.12
+      - run: npm ci
+      - run: npm run test:api
+        env:
+          STUDIO_TEST_POSTGRES_URL: postgresql+psycopg://studio:studio_test@127.0.0.1:5432/studio_test
+      - run: npm run check:api
+      - run: npm run api:types
+      - run: git diff --exit-code -- packages/contracts apps/web/src/lib/api-schema.ts
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - run: npm exec --workspace @studio/web -- playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-results
+          path: apps/web/test-results

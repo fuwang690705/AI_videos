@@ -1,0 +1,29 @@
+{
+  "name": "ai-content-studio",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=22",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "dev": "npm run dev --workspace @studio/web",
+    "dev:api": "uv run --directory apps/api uvicorn studio.main:app --reload --host 127.0.0.1 --port 8000",
+    "dev:worker": "uv run --directory apps/api python -m studio.worker",
+    "db:migrate": "uv run --directory apps/api alembic upgrade head",
+    "api:export": "uv run --directory apps/api python -m studio.export_openapi",
+    "api:types": "npm run api:export && npm run api:types --workspace @studio/web",
+    "build": "npm run build --workspace @studio/web",
+    "typecheck": "npm run typecheck --workspace @studio/web",
+    "lint": "npm run lint --workspace @studio/web",
+    "check:api": "uv run --directory apps/api ruff check . && uv run --directory apps/api ruff format --check .",
+    "test:api": "uv run --directory apps/api pytest",
+    "test:e2e": "npm run test:e2e --workspace @studio/web"
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}
