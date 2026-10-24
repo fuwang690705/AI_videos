@@ -1,0 +1,14 @@
+:root {
+  --studio-bg: #f8f9f6;
+  --studio-panel: #fff;
+  --studio-ink: #282c29;
+  --studio-muted: #727971;
+  --studio-line: #e6e9e2;
+  --studio-accent: #6150b8;
+  --studio-accent-soft: #f0ecff;
+  --studio-green: #5b8661;
+  --studio-lime: #d8f36a;
+  --studio-font:
+    Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+}

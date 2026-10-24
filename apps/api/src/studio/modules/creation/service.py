@@ -20,10 +20,12 @@ from studio.modules.creation.schemas import (
     ShotDetails,
 )
 from studio.modules.production.profiles import get_profile
+from studio.modules.story.models import StoryDraft
 
 
 def export_snapshot(db: Session, project_id: UUID) -> CreationSnapshot:
     project = require_record(db, Project, project_id)
+    story = db.get(StoryDraft, project_id)
     archive = db.scalar(
         select(CreationImportRecord).where(CreationImportRecord.project_id == project_id)
     )
@@ -68,6 +70,7 @@ def export_snapshot(db: Session, project_id: UUID) -> CreationSnapshot:
         )
     return CreationSnapshot(
         schema_version=1,
+        story=story.content if story else None,
         project=ProjectCreate(
             name=project.name,
             synopsis=project.synopsis,
@@ -109,6 +112,8 @@ def import_copy(db: Session, data: CreationImport) -> Project:
     try:
         db.add(project)
         db.flush()
+        if data.snapshot.story is not None:
+            db.add(StoryDraft(project_id=project.id, content=data.snapshot.story.model_dump()))
         for episode_data in data.snapshot.episodes:
             episode = Episode(
                 project_id=project.id,

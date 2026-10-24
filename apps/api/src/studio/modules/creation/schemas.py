@@ -12,6 +12,7 @@ from studio.modules.catalog.schemas import (
     ShotCreate,
     Summary,
 )
+from studio.modules.story.schemas import StoryContent
 
 
 class ShotDetails(InputModel):
@@ -42,6 +43,7 @@ class CreationSnapshot(InputModel):
     schema_version: Literal[1]
     project: ProjectCreate
     episodes: list[CreationEpisode] = Field(max_length=100)
+    story: StoryContent | None = None
 
     @model_validator(mode="after")
     def validate_tree(self) -> Self:

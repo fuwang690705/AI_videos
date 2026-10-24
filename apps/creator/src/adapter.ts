@@ -26,9 +26,12 @@ async function hydrated(store: {
 export async function importSnapshot(snapshot: Snapshot): Promise<string> {
   await hydrated(useProjectStore);
   await hydrated(useScriptStore);
+  const identity = { ...snapshot };
+  // Optional story metadata was added to v1. Existing text-only drafts retain their identity.
+  if (identity.story == null) delete identity.story;
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    new TextEncoder().encode(JSON.stringify(snapshot)),
+    new TextEncoder().encode(JSON.stringify(identity)),
   );
   const key = `studio-session:${Array.from(new Uint8Array(digest), (n) => n.toString(16).padStart(2, "0")).join("")}`;
   const existing = localStorage.getItem(key);

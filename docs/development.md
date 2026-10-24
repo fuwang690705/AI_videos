@@ -24,6 +24,8 @@ API 启动不自动建表；必须显式运行 Alembic 迁移。`/health/live` �
 | PUT        | `/api/v1/shots/{id}`             | 保存完整分镜内容并检查修订号 |
 | GET        | `/api/v1/creation/projects/{id}/snapshot` | 导出版本化文本创作快照 |
 | POST       | `/api/v1/creation/imports`       | 原子另存项目副本并保留镜头扩展字段 |
+| GET / PUT  | `/api/v1/story/projects/{id}`    | 读取或保存故事草稿，检查 revision |
+| POST       | `/api/v1/story/projects/{id}/preview` | 预览已保存版本的结构化剧本目录 |
 
 项目列表支持 `q`、`offset`、`limit`，搜索按项目名称，通配符按字面处理。返回 `items`、`total`、`offset`、`limit`。剧集、场景、分镜目前按父对象完整返回，扩大量级前需补充对应分页。
 

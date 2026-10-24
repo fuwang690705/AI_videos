@@ -6,6 +6,7 @@ from studio.core.config import get_settings
 from studio.core.database import Base, build_engine
 from studio.modules.catalog import models  # noqa: F401
 from studio.modules.creation import models as creation_models  # noqa: F401
+from studio.modules.story import models as story_models  # noqa: F401
 
 config = context.config
 if config.config_file_name:

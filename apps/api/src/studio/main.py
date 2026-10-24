@@ -10,6 +10,7 @@ from studio.core.config import get_settings
 from studio.core.database import get_session
 from studio.modules.catalog.router import router
 from studio.modules.creation.router import router as creation_router
+from studio.modules.story.router import router as story_router
 
 
 def create_app() -> FastAPI:
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(router)
     app.include_router(creation_router)
+    app.include_router(story_router)
 
     @app.get("/health/live", tags=["health"])
     def live() -> dict[str, str]:
@@ -37,7 +39,7 @@ def create_app() -> FastAPI:
     def ready(db: Annotated[Session, Depends(get_session)]) -> dict[str, str]:
         try:
             revision = db.execute(text("SELECT version_num FROM alembic_version")).scalar()
-            if revision != "0002_creation":
+            if revision != "0003_story":
                 raise HTTPException(status_code=503, detail="数据库迁移版本不匹配")
             db.execute(text("SELECT id FROM projects LIMIT 1"))
         except SQLAlchemyError as exc:

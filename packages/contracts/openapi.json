@@ -632,6 +632,153 @@
         }
       }
     },
+    "/api/v1/story/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "story"
+        ],
+        "summary": "Get Draft",
+        "operationId": "get_draft_api_v1_story_projects__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "story"
+        ],
+        "summary": "Save Draft",
+        "operationId": "save_draft_api_v1_story_projects__project_id__put",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StoryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoryRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/story/projects/{project_id}/preview": {
+      "post": {
+        "tags": [
+          "story"
+        ],
+        "summary": "Preview",
+        "operationId": "preview_api_v1_story_projects__project_id__preview_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScriptPreviewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "tags": [
@@ -868,6 +1015,16 @@
             "type": "array",
             "maxItems": 100,
             "title": "Episodes"
+          },
+          "story": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StoryContent"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "additionalProperties": false,
@@ -1221,6 +1378,21 @@
         ],
         "title": "SceneRead"
       },
+      "ScriptPreviewRequest": {
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "ScriptPreviewRequest"
+      },
       "ShotCreate": {
         "properties": {
           "title": {
@@ -1389,6 +1561,149 @@
           "revision"
         ],
         "title": "ShotUpdate"
+      },
+      "StoryContent": {
+        "properties": {
+          "source_text": {
+            "type": "string",
+            "maxLength": 100000,
+            "title": "Source Text",
+            "default": ""
+          },
+          "outline": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Outline",
+            "default": ""
+          },
+          "world_setting": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "World Setting",
+            "default": ""
+          },
+          "character_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Character Notes",
+            "default": ""
+          },
+          "continuity_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Continuity Notes",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "StoryContent"
+      },
+      "StoryRead": {
+        "properties": {
+          "source_text": {
+            "type": "string",
+            "maxLength": 100000,
+            "title": "Source Text",
+            "default": ""
+          },
+          "outline": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Outline",
+            "default": ""
+          },
+          "world_setting": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "World Setting",
+            "default": ""
+          },
+          "character_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Character Notes",
+            "default": ""
+          },
+          "continuity_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Continuity Notes",
+            "default": ""
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Project Id"
+          },
+          "revision": {
+            "type": "integer",
+            "title": "Revision"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "project_id",
+          "revision"
+        ],
+        "title": "StoryRead"
+      },
+      "StoryUpdate": {
+        "properties": {
+          "source_text": {
+            "type": "string",
+            "maxLength": 100000,
+            "title": "Source Text",
+            "default": ""
+          },
+          "outline": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Outline",
+            "default": ""
+          },
+          "world_setting": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "World Setting",
+            "default": ""
+          },
+          "character_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Character Notes",
+            "default": ""
+          },
+          "continuity_notes": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Continuity Notes",
+            "default": ""
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "revision"
+        ],
+        "title": "StoryUpdate"
       },
       "ValidationError": {
         "properties": {

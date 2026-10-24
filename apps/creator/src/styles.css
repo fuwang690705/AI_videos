@@ -1,22 +1,24 @@
 @import "../../../third_party/moyin-creator/src/index.css";
+@import "../../../packages/theme/studio.css";
 @source "../../../third_party/moyin-creator/src";
 
 body {
   margin: 0;
-  background: #f7f8fa;
-  color: #252835;
-  font-family: Arial, "Microsoft YaHei", sans-serif;
+  background: var(--studio-bg);
+  color: var(--studio-ink);
+  font-family: var(--studio-font);
 }
 .creator-heading {
-  padding: 20px 24px;
+  padding: 24px;
   display: flex;
   align-items: center;
   gap: 24px;
   justify-content: space-between;
-  border-bottom: 1px solid #e3e5ea;
+  border-bottom: 1px solid var(--studio-line);
+  background: linear-gradient(110deg, #f6f2ff, #f8f9f6);
 }
 .creator-heading small {
-  color: #686374;
+  color: var(--studio-accent);
 }
 .creator-heading h1 {
   margin: 4px 0;
@@ -40,7 +42,8 @@ body {
 }
 .creator-tree {
   padding: 20px;
-  border-right: 1px solid #e3e5ea;
+  border-right: 1px solid var(--studio-line);
+  background: var(--studio-panel);
   overflow: auto;
   max-height: 750px;
 }
@@ -77,10 +80,12 @@ body {
   color: #747584;
 }
 .creator-scene button[aria-current] {
-  background: #e9e1ff;
+  background: var(--studio-accent-soft);
+  color: var(--studio-accent);
+  box-shadow: inset 3px 0 var(--studio-accent);
 }
 .creator-scene .add-shot {
-  color: #62508d;
+  color: var(--studio-accent);
 }
 .creator-fields {
   padding: 20px;
@@ -97,14 +102,14 @@ body {
   width: 100%;
   padding: 10px;
   background: white;
-  border: 1px solid #d9dce5;
-  border-radius: 8px;
+  border: 1px solid var(--studio-line);
+  border-radius: 10px;
   margin-top: 6px;
 }
 .upstream-shot-panel {
   min-width: 0;
   padding: 12px;
-  border-left: 1px solid #e3e5ea;
+  border-left: 1px solid var(--studio-line);
   height: 750px;
   background: white;
 }
@@ -125,6 +130,60 @@ body {
 }
 .creator-wait {
   padding: 32px;
+}
+:root.light {
+  --background: 80 20% 97%;
+  --foreground: 135 5% 16%;
+  --panel: 0 0% 100%;
+  --primary: 250 40% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 255 100% 96%;
+  --secondary-foreground: 250 40% 40%;
+  --accent: 255 100% 96%;
+  --accent-foreground: 250 40% 40%;
+  --muted: 80 20% 96%;
+  --muted-foreground: 110 3% 46%;
+  --border: 85 14% 90%;
+  --input: 85 14% 90%;
+  --ring: 250 40% 50%;
+  --radius: 0.7rem;
+}
+.creator-fields input:focus,
+.creator-fields textarea:focus {
+  border-color: var(--studio-accent);
+  outline: 3px solid #6657db13;
+}
+.upstream-shot-panel button {
+  border-radius: 9px;
+}
+.upstream-shot-panel button:disabled[title="媒体生成尚未接入"] {
+  background: var(--studio-bg);
+  color: var(--studio-muted);
+  border: 1px solid var(--studio-line);
+  opacity: 1;
+}
+.upstream-shot-panel button[aria-label="编辑镜头属性"],
+.upstream-shot-panel button[aria-label="保存镜头属性"],
+.upstream-shot-panel button[aria-label="取消镜头编辑"] {
+  width: auto;
+  height: 32px;
+  padding: 0 10px;
+  color: var(--studio-accent);
+  background: var(--studio-accent-soft);
+  gap: 5px;
+}
+.upstream-shot-panel button[aria-label="编辑镜头属性"]::after {
+  content: "编辑";
+}
+.upstream-shot-panel button[aria-label="保存镜头属性"] {
+  background: var(--studio-lime);
+  color: var(--studio-ink);
+}
+.upstream-shot-panel button[aria-label="保存镜头属性"]::after {
+  content: "保存";
+}
+.upstream-shot-panel button[aria-label="取消镜头编辑"]::after {
+  content: "取消";
 }
 @media (max-width: 850px) {
   .creator-grid {

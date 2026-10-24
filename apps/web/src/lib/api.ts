@@ -10,6 +10,7 @@ export type Profile = Schemas["ProductionProfile"];
 export type ProductionType = Schemas["ProductionType"];
 export type Overview = Schemas["OverviewRead"];
 export type CreationSnapshot = Schemas["CreationSnapshot"];
+export type StoryDraft = Schemas["StoryRead"];
 
 export const directionLabels: Record<ProductionType, string> = {
   MANGA: "AI 漫剧",
@@ -54,6 +55,11 @@ async function request<T>(
 }
 
 export const api = {
+  story: (id: string) => request<StoryDraft>(`/story/projects/${id}`),
+  saveStory: (id: string, data: Schemas["StoryUpdate"]) =>
+    request<StoryDraft>(`/story/projects/${id}`, data, "PUT"),
+  previewScript: (id: string, revision: number) =>
+    request<CreationSnapshot>(`/story/projects/${id}/preview`, { revision }),
   creationSnapshot: (id: string) =>
     request<CreationSnapshot>(`/creation/projects/${id}/snapshot`),
   saveCreationCopy: (data: Schemas["CreationImport"]) =>

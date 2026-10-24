@@ -178,6 +178,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/story/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Draft */
+        get: operations["get_draft_api_v1_story_projects__project_id__get"];
+        /** Save Draft */
+        put: operations["save_draft_api_v1_story_projects__project_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/story/projects/{project_id}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview */
+        post: operations["preview_api_v1_story_projects__project_id__preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -303,6 +338,7 @@ export interface components {
             project: components["schemas"]["ProjectCreate"];
             /** Episodes */
             episodes: components["schemas"]["CreationEpisode"][];
+            story?: components["schemas"]["StoryContent"] | null;
         };
         /** EpisodeCreate */
         EpisodeCreate: {
@@ -455,6 +491,11 @@ export interface components {
             /** Location */
             location: string;
         };
+        /** ScriptPreviewRequest */
+        ScriptPreviewRequest: {
+            /** Revision */
+            revision: number;
+        };
         /** ShotCreate */
         ShotCreate: {
             /** Title */
@@ -546,6 +587,101 @@ export interface components {
              * @default 5
              */
             duration_seconds: number;
+            /** Revision */
+            revision: number;
+        };
+        /** StoryContent */
+        StoryContent: {
+            /**
+             * Source Text
+             * @default
+             */
+            source_text: string;
+            /**
+             * Outline
+             * @default
+             */
+            outline: string;
+            /**
+             * World Setting
+             * @default
+             */
+            world_setting: string;
+            /**
+             * Character Notes
+             * @default
+             */
+            character_notes: string;
+            /**
+             * Continuity Notes
+             * @default
+             */
+            continuity_notes: string;
+        };
+        /** StoryRead */
+        StoryRead: {
+            /**
+             * Source Text
+             * @default
+             */
+            source_text: string;
+            /**
+             * Outline
+             * @default
+             */
+            outline: string;
+            /**
+             * World Setting
+             * @default
+             */
+            world_setting: string;
+            /**
+             * Character Notes
+             * @default
+             */
+            character_notes: string;
+            /**
+             * Continuity Notes
+             * @default
+             */
+            continuity_notes: string;
+            /**
+             * Project Id
+             * Format: uuid
+             */
+            project_id: string;
+            /** Revision */
+            revision: number;
+            /** Updated At */
+            updated_at?: string | null;
+        };
+        /** StoryUpdate */
+        StoryUpdate: {
+            /**
+             * Source Text
+             * @default
+             */
+            source_text: string;
+            /**
+             * Outline
+             * @default
+             */
+            outline: string;
+            /**
+             * World Setting
+             * @default
+             */
+            world_setting: string;
+            /**
+             * Character Notes
+             * @default
+             */
+            character_notes: string;
+            /**
+             * Continuity Notes
+             * @default
+             */
+            continuity_notes: string;
             /** Revision */
             revision: number;
         };
@@ -992,6 +1128,107 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_draft_api_v1_story_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_draft_api_v1_story_projects__project_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoryUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoryRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_api_v1_story_projects__project_id__preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ScriptPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationSnapshot"];
                 };
             };
             /** @description Validation Error */
