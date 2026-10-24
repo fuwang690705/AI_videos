@@ -10,6 +10,10 @@
     "npm": ">=10"
   },
   "scripts": {
+    "setup:local": "node scripts/setup-local.mjs",
+    "dev:local": "node --env-file-if-exists=.env scripts/dev-local.mjs",
+    "dev:creator": "npm --prefix apps/creator run dev",
+    "build:creator": "npm --prefix apps/creator run build",
     "dev": "npm run dev --workspace @studio/web",
     "dev:api": "uv run --directory apps/api uvicorn studio.main:app --reload --host 127.0.0.1 --port 8000",
     "dev:worker": "uv run --directory apps/api python -m studio.worker",

@@ -2,6 +2,8 @@
 
 ## 运行与配置
 
+完整文本创作接入使用 `npm run setup:local` 安装，再用 `npm run dev:local` 统一启动本机工作台、API 和魔因创作服务；无需 Docker。独立 React 18 包、快照字段、消息边界和许可说明见 [魔因接入说明](./creation-integration.md)。
+
 根目录 `.env` 由 Python 配置层和 Next.js 配置层读取。前端浏览器通过同源 `/api/v1` 请求，由 Next.js 转发给 `STUDIO_API_ORIGIN`，不把服务端配置或密钥打包给浏览器。
 
 API 启动不自动建表；必须显式运行 Alembic 迁移。`/health/live` 只检查进程，`/health/ready` 检查数据库和当前迁移版本。改动数据库后需增加迁移，并同步调整迁移就绪检查。
@@ -20,6 +22,8 @@ API 启动不自动建表；必须显式运行 Alembic 迁移。`/health/live` �
 | GET / POST | `/api/v1/episodes/{id}/scenes`   | 场景列表或创建               |
 | GET / POST | `/api/v1/scenes/{id}/shots`      | 分镜列表或创建               |
 | PUT        | `/api/v1/shots/{id}`             | 保存完整分镜内容并检查修订号 |
+| GET        | `/api/v1/creation/projects/{id}/snapshot` | 导出版本化文本创作快照 |
+| POST       | `/api/v1/creation/imports`       | 原子另存项目副本并保留镜头扩展字段 |
 
 项目列表支持 `q`、`offset`、`limit`，搜索按项目名称，通配符按字面处理。返回 `items`、`total`、`offset`、`limit`。剧集、场景、分镜目前按父对象完整返回，扩大量级前需补充对应分页。
 

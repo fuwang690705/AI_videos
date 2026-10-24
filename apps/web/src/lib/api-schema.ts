@@ -144,6 +144,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/creation/projects/{project_id}/snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Snapshot */
+        get: operations["snapshot_api_v1_creation_projects__project_id__snapshot_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/creation/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Save Copy */
+        post: operations["save_copy_api_v1_creation_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health/live": {
         parameters: {
             query?: never;
@@ -182,6 +216,94 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** CreationEpisode */
+        CreationEpisode: {
+            /** Number */
+            number: number;
+            /** Title */
+            title: string;
+            /**
+             * Synopsis
+             * @default
+             */
+            synopsis: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Scenes */
+            scenes: components["schemas"]["CreationScene"][];
+        };
+        /** CreationImport */
+        CreationImport: {
+            /**
+             * Request Id
+             * Format: uuid
+             */
+            request_id: string;
+            /** Name */
+            name: string;
+            snapshot: components["schemas"]["CreationSnapshot"];
+        };
+        /** CreationScene */
+        CreationScene: {
+            /** Number */
+            number: number;
+            /** Title */
+            title: string;
+            /**
+             * Location
+             * @default
+             */
+            location: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Shots */
+            shots: components["schemas"]["CreationShot"][];
+        };
+        /** CreationShot */
+        CreationShot: {
+            /** Title */
+            title: string;
+            /**
+             * Visual Description
+             * @default
+             */
+            visual_description: string;
+            /**
+             * Dialogue
+             * @default
+             */
+            dialogue: string;
+            /**
+             * Duration Seconds
+             * @default 5
+             */
+            duration_seconds: number;
+            /** Number */
+            number: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            details: components["schemas"]["ShotDetails"];
+        };
+        /** CreationSnapshot */
+        CreationSnapshot: {
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: 1;
+            project: components["schemas"]["ProjectCreate"];
+            /** Episodes */
+            episodes: components["schemas"]["CreationEpisode"][];
+        };
         /** EpisodeCreate */
         EpisodeCreate: {
             /** Number */
@@ -354,6 +476,29 @@ export interface components {
             duration_seconds: number;
             /** Number */
             number: number;
+        };
+        /** ShotDetails */
+        ShotDetails: {
+            /**
+             * Action Summary
+             * @default
+             */
+            action_summary: string;
+            /**
+             * Shot Size
+             * @default
+             */
+            shot_size: string;
+            /**
+             * Camera Movement
+             * @default none
+             */
+            camera_movement: string;
+            /**
+             * Special Technique
+             * @default none
+             */
+            special_technique: string;
         };
         /** ShotRead */
         ShotRead: {
@@ -783,6 +928,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ShotRead"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    snapshot_api_v1_creation_projects__project_id__snapshot_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreationSnapshot"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    save_copy_api_v1_creation_imports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreationImport"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectRead"];
                 };
             };
             /** @description Validation Error */

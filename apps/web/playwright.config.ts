@@ -22,6 +22,12 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
     {
+      command: "npm --prefix ../creator run dev -- --port 5174",
+      url: "http://127.0.0.1:5174",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
       command:
         "uv run --directory ../api alembic upgrade head && uv run --directory ../api uvicorn studio.main:app --host 127.0.0.1 --port 8100",
       url: "http://127.0.0.1:8100/health/ready",
@@ -32,7 +38,10 @@ export default defineConfig({
     {
       command: "npm run dev -- --port 3100",
       url: "http://127.0.0.1:3100",
-      env: { STUDIO_API_ORIGIN: "http://127.0.0.1:8100" },
+      env: {
+        STUDIO_API_ORIGIN: "http://127.0.0.1:8100",
+        NEXT_PUBLIC_STUDIO_CREATOR_ORIGIN: "http://127.0.0.1:5174",
+      },
       reuseExistingServer: false,
       timeout: 90_000,
     },

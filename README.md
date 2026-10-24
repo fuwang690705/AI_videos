@@ -2,7 +2,7 @@
 
 AI 剧集内容生产平台的开发框架，面向 AI 漫剧、沙雕动漫与 AI 真人剧。
 
-当前实现：项目 → 剧集 → 场景 → 分镜的持久化管理，以及生产配置绑定。前端为中文制作工作台，后端提供 OpenAPI，独立 Temporal Worker 提供无模型调用的预检样例。
+当前实现：项目 → 剧集 → 场景 → 分镜的持久化管理、生产配置绑定，以及魔因浏览器分镜编辑和项目副本回存。前端为中文制作工作台，后端提供 OpenAPI，独立 Temporal Worker 提供无模型调用的预检样例。
 
 **当前版本为本地开发框架，尚未实现登录权限、真实模型调用、完整版本历史、媒体生产、审核和预算控制。请在本机使用，不作为生产环境部署。**
 
@@ -50,7 +50,7 @@ git submodule update --init --recursive
 git clone --branch work --recurse-submodules https://github.com/fuwang690705/AI_videos.git
 ```
 
-请先读 [交接说明](./docs/handoff.md)。`third_party/moyin-creator` 是固定版本的魔因漫创上游源码，保留其 AGPL 许可证与版权；目前完成调研与源码登记，业务集成仍待实现。
+请先读 [交接说明](./docs/handoff.md)。`third_party/moyin-creator` 是固定版本的魔因漫创上游源码，保留其 AGPL 许可证与版权。浏览器接入复用其分镜属性组件和项目 Store；当前只接入文本编辑，不包含模型和媒体生成。详见 [接入说明与验证边界](./docs/creation-integration.md)。
 
 ## 快速启动：无需 Docker
 
@@ -70,22 +70,16 @@ git clone --branch work --recurse-submodules https://github.com/fuwang690705/AI_
    cp .env.example .env
    ```
 
-2. 安装锁定依赖，运行数据库迁移：
+2. 统一安装锁定依赖并运行数据库迁移（自动补齐缺失的子模块）：
 
    ```bash
-   npm ci
-   uv sync --directory apps/api --locked
-   npm run db:migrate
+   npm run setup:local
    ```
 
-3. 打开两个终端，各自在项目根目录运行：
+3. 在项目根目录统一启动 API、工作台和魔因创作模块：
 
    ```bash
-   npm run dev:api
-   ```
-
-   ```bash
-   npm run dev
+   npm run dev:local
    ```
 
 4. 访问：
@@ -93,6 +87,13 @@ git clone --branch work --recurse-submodules https://github.com/fuwang690705/AI_
    - 工作台：[http://127.0.0.1:3000](http://127.0.0.1:3000)
    - API 文档：[http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
    - 数据库就绪检查：[http://127.0.0.1:8000/health/ready](http://127.0.0.1:8000/health/ready)
+   - 魔因创作服务：`127.0.0.1:5173`，从工作台的项目页点击「进入魔因创作」使用。
+
+统一启动固定使用本机 3000、8000、5173 端口，端口占用会提示退出；Ctrl+C 同时停止三个服务。无需 Docker、Temporal、GPU 或模型 API Key。
+
+进入项目 →「进入魔因创作」→ 编辑分镜 → 填写副本名称 →「另存回主平台」。魔因右侧属性面板需先点击保存图标提交单镜头编辑，再另存整个项目。回存以新项目副本呈现，原项目保留；重复重试同一份内容不会重复创建。编辑中的草稿保存在当前浏览器，已回存的副本保存在 SQLite。
+
+仅开发主工作台时仍可分别运行 `npm run dev:api` 和 `npm run dev`；完整接入还需 `npm run dev:creator`。
 
 默认 SQLite 文件位于 `apps/api/.data/studio.db`，重启后数据保留。第一次打开没有预置项目，可从“新建项目”开始，再依次创建剧集、场景和分镜。
 
@@ -158,6 +159,7 @@ npm run check:api
 npm run typecheck
 npm run lint
 npm run build
+npm run build:creator
 ```
 
 接口改变后重新生成契约：

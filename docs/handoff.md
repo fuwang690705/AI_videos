@@ -89,105 +89,68 @@ docs/implementation-status.md
 
 预览文件在 `/workspace/scratch/studio-preview/`：`dashboard-desktop.png`、`dashboard-mobile.png`、`settings-desktop.png`。云端文件可能不会跨会话保留。
 
-## Moyin Creator 调研：已完成，尚未开始集成编码
+## Moyin Creator：当前已实现的文本创作接入
 
-- 上游 URL：`https://github.com/MemeCalculate/moyin-creator.git`。
-- 已登记到主仓库子模块 `third_party/moyin-creator`，初始化子模块后可跨会话恢复。原调研副本 `/workspace/scratch/moyin-upstream` 仅是本会话临时目录。
-- 已检查固定提交：`7e5c5655de94d49885e13c369f0a71212893a0aa`。
-- 上游 package.json 版本：0.2.3。README 中部分下载版本与包版本不同，选型以实际源码为准。
-- 技术栈：Electron 30、React 18、TypeScript、Vite / electron-vite、Zustand 5、Radix UI、Tailwind CSS 4。
-- 上游包含剧本解析、角色、场景、导演、S 级视频创作、媒体、时间线与导出等界面和逻辑。真实生成需要用户配置服务商 API Key；本会话没有配置或调用付费服务。
-- 许可证：package.json 为 `AGPL-3.0-or-later`，仓库保留 `LICENSE`、`COMMERCIAL_LICENSE.md`、版权声明。需遵循适用的源码提供及分发要求；如需闭源集成/分发，应核实商业许可。未替用户变更整个主项目的许可，也没有联系作者或购买许可。
+上游固定提交仍为 `7e5c5655de94d49885e13c369f0a71212893a0aa`，位于 `third_party/moyin-creator`。上游源码和许可证未改动。此前只有源码调研与子模块登记；本次新增了实际可运行的浏览器接入，详细边界见 [creation-integration.md](./creation-integration.md)。
 
-**实际完成程度：已完成源码调研，并将固定版本登记为 Git 子模块。尚未安装上游依赖或实现创作功能集成，也没有完成浏览器适配、桥接接口、导入导出、集成测试或一键启动命令。子模块同步不等于业务集成已完成。**
+### 本次实现
 
-### 已定位的上游文件与接口
+- `apps/creator` 是独立 Vite + React 18.3.1 包，使用自己的 `package-lock.json`；不加入主 npm workspace，不与 Next.js 的 React 19 混装。
+- 直接复用上游分镜 `PropertyPanel`、项目/剧本 Store 与 `switchProject()`；新增浏览器入口、层级导航、标题/画面/时长表单和协议适配。
+- 构建时为上游属性面板的编辑/保存/取消按钮增加无障碍名称，禁用未接入的媒体导演入口；适配写在 Vite 配置中，不修改子模块。
+- 主平台项目页新增「进入魔因创作」，通过 iframe 传入完整项目文本快照，支持三种方向；方向与 Profile 保留。
+- 支持编辑标题、画面、动作、对白、整数秒时长与镜头参数，在已有场景下新增/删除分镜；剧集和场景仍在主平台创建。
+- 「另存回主平台」以新 UUID 创建项目副本，保留原项目。所有目录、扩展字段与请求标识在一个数据库事务中保存。校验失败和中途数据库失败不留下部分记录。
+- 新迁移 `0002_creation` 增加 `creation_imports` 表，保存请求幂等信息与镜头扩展字段；原有目录数据保留。
+- `GET /api/v1/creation/projects/{id}/snapshot` 导出快照；`POST /api/v1/creation/imports` 原子创建副本。
+- 协议 `studio-moyin` 版本 1，两端检查 origin、source、版本和请求标识；有响应类型检查、超时与界面错误提示，不传 API Key。
+- 浏览器草稿按快照摘要恢复，来源发生变化时建立新草稿。最近一次保存的摘要、请求标识和副本名称保存在 sessionStorage，支持响应丢失后的重试。
+- 单次快照上限为 100 集、1000 场景、5000 分镜、4 MB 文本；时长仅接受 1–120 整数，不把小数自动取整。
+- `npm run setup:local` 统一安装/迁移；`npm run dev:local` 统一启动本机 3000/8000/5173 三个服务，检查端口占用、处理联动退出和进程清理。
 
-```text
-src/App.tsx                          启动迁移、主题与自动模型元数据同步
-src/main.tsx                         React 入口，IPC 使用有 Electron 条件判断
-src/components/Layout.tsx            项目/剧本/角色/场景/导演等布局
-src/components/TabBar.tsx             导航
-src/components/ProjectHeader.tsx      当前项目与保存提示
-src/stores/project-store.ts          项目列表、createProject、setActiveProject
-src/stores/script-store.ts           项目原文、结构化剧本、shots 及修改操作
-src/stores/media-panel-store.ts      activeTab、inProject、剧集作用域
-src/lib/project-switcher.ts          switchProject：协调多个 store 的切换和 rehydrate
-src/lib/project-storage.ts           按项目路由 Zustand 持久化
-src/lib/indexed-db-storage.ts        Electron 文件存储，浏览器回退 localStorage
-src/lib/storage-migration.ts         迁移/恢复，主要逻辑依赖 window.fileStorage
-src/lib/cors-fetch.ts                DEV 下走 /__api_proxy，生产模式直接 fetch
-src/lib/script/export-service.ts     manifest.json 及图片/视频导出，有浏览器回退
-src/types/script.ts                  ScriptData / Episode / ScriptScene / Shot
-vite.config.ts                      包含 Electron 插件和通用 API CORS 代理
-electron.vite.config.ts              桌面构建配置
-```
+### 使用和存储边界
 
-注意：上游默认 `npm run dev` 启动 Electron，不是普通纯 Web Vite。`npm run build` 带桌面打包流程与 PowerShell prebuild；不能直接假定在当前 Linux 环境或主项目中可用。需单独验证 Web 入口和依赖。上游 React 18 与主项目 React 19 应隔离，避免混装 React。不要直接把带任意 URL 的代理暴露到公网。
+项目页 →「进入魔因创作」→ 编辑 → 魔因右侧属性面板先点击保存图标 → 填写副本名称 →「另存回主平台」→ 打开已保存副本。
 
-上游主要数据结构：
+- 标题、画面与时长直接写浏览器草稿；魔因属性面板中的动作、对白、镜头参数需点击保存图标提交单镜头修改。尚未提交时回存与切换镜头会提示。
+- 浏览器草稿存于创作服务自己 origin 的 localStorage，带独立前缀；切换浏览器/端口或清理站点数据不会自动迁移未回存草稿。已回存内容存于 SQLite。
+- 主平台普通分镜卡片展示原有字段；动作与镜头参数可再次进入创作模块查看。
+- 这是魔因文本编辑组件的浏览器适配，不是全部桌面能力的移植。未接入模型调用、媒体生成、角色资产、导演媒体工作流、时间线、桌面文件系统和成片导出；所有 `generation_enabled` 仍为 false。
+- 没有暴露上游任意 URL 代理，没有提供浏览器 API Key 配置。保留 AGPL 版权和原始许可证，浏览器适配包包含完整许可证副本；不宣称取得商业许可或替主仓库整体换证。
 
-- `ScriptData`：`title`、`genre?`、`logline?`、`language`、`targetDuration?`、`characters[]`、`scenes[]`、`episodes[]`、`storyParagraphs[]`。
-- `Episode`：`id`、`index`、`title`、`description?`、`sceneIds[]`。
-- `ScriptScene`：`id`、`name?`、`location`、`time`、`atmosphere`，另有提示词/多视角等扩展字段。
-- `Shot`：`id`、`index`、`episodeId?`、`sceneRefId`、`actionSummary`、`visualDescription?`、`dialogue?`、`duration?`，另有角色、镜头参数、提示词、媒体 URL、生成状态等。
-- `ScriptProjectData`：包含 `rawScript`、`scriptData`、`shots`、`episodeRawScripts`、`projectBackground` 等。
-- 项目切换应使用 `switchProject()`，不要直接改 activeProjectId：上游明确说明错误的 rehydrate 顺序可能覆盖已有持久化数据。
+### 本次验证
 
-## 集成方向与下一步（设计建议，尚未实现）
+- SQLite API / 迁移 / 预检测试 23 项通过，包含三种方向快照回存、字段/编号/ID/版本校验、重复请求、中途数据库失败回滚和已有数据库升级保留内容。
+- 主工作台 TypeScript、ESLint、Next.js 生产构建通过；创作模块 Vite 生产构建通过。
+- Chromium 端到端测试覆盖三种方向传入、原版魔因属性编辑、刷新恢复、回存及重开、原项目不变、异常时长、服务不可用重连、响应丢失重试与原有 3 项浏览器回归。
+- 统一安装、三个服务启动、端口冲突检查、联动停止和 SQLite 重启恢复在 Linux 云环境实测；不表示用户电脑已运行。Windows/macOS 尚未实测。
+- 没有配置或调用任何付费模型，没有验证媒体生成。PostgreSQL 测试保留在 CI 配置中，本次接入仅实测 SQLite。
 
-已经向用户说明的方向：让 Moyin 作为独立创作工具与已有工作台协作，提供项目传入、分镜文本回存和统一本地启动。保留主平台的项目管理与长期生产规划，复用上游创作能力。
+## 本地运行
 
-可从以下顺序推进，依据实际运行结果调整：
-
-1. 先验证固定版本的 Moyin 能否作为独立本地 Web 模块运行；保留来源、许可证和版本信息。评估浏览器存储、媒体访问、CORS、导出和 Electron 专属功能的兼容边界。
-2. 在现有工作台增加可用入口。两个 React 版本独立构建/运行；独立窗口或 iframe 均是待验证实现选择，不能仅嵌入一个链接就声称完成集成。
-3. 定义版本化项目快照：主项目 → 剧集 → 场景 → 分镜，与 Moyin 的 ScriptData / shots 适配。
-4. FastAPI 提供项目快照导出与原子导入。建议导入为新项目副本，明确数据范围，避免覆盖已有记录。所有长度、编号、时长、关联关系由后端验证，失败回滚。
-5. 若使用 postMessage 桥接，核验 origin、source、协议版本和请求标识，设置超时/错误反馈，不在消息中传递 API Key。
-6. 处理原模型差异：主项目分镜时长为 1～120 的整数秒、标题不超过 120 字符、描述/对白不超过 10000 字符。上游有小数时长及更丰富字段，需要明确转换和保留策略，不能静默丢弃。
-7. 主项目暂不支持角色、媒体和生产元数据；确定如何保留，或明确说明这些内容仍在 Moyin 独立存储。媒体生成、项目中心的 Profile 与上游模型配置是不同概念，不要将 generation_enabled 全部改为 true。
-8. 增加本地统一安装/启动说明，验证真实双向数据流、错误处理与已有流程回归，然后更新实施状态和源码包。
-
-建议验收：从主平台建立含剧集、场景、分镜的项目，传入 Moyin 后能正确展示/编辑；编辑后的分镜可另存回主平台并刷新后保留；原项目仍完好；服务未启动时有可操作错误提示；不依赖付费 API 也能测试目录与文本桥接。若模型生成未实际验证，应如实说明。
-
-## 本地运行（主项目，现有功能）
-
-安装 Node.js >=22、npm >=10、Python 3.12、uv。在主项目根目录将 `.env.example` 复制为 `.env` 后执行：
+Node.js 22+、npm 10+、Python 3.12、uv。仓库根目录可复制 `.env.example` 为 `.env`，默认 SQLite 无需 Docker：
 
 ```bash
-npm ci
-uv sync --directory apps/api --locked
-npm run db:migrate
+npm run setup:local
+npm run dev:local
 ```
 
-两个终端分别运行：
+工作台 `http://127.0.0.1:3000`，API `http://127.0.0.1:8000/docs`。从项目页进入创作模块；单独打开创作服务不会自动拥有项目上下文。
 
 ```bash
-npm run dev:api
-```
-
-```bash
-npm run dev
-```
-
-工作台 `http://127.0.0.1:3000`，API 文档 `http://127.0.0.1:8000/docs`，就绪检查 `http://127.0.0.1:8000/health/ready`。
-
-无需 Docker 或 PostgreSQL 即可运行当前目录管理功能；Temporal 不是此流程的前置条件。本会话未证实用户已经在自己电脑上成功启动。
-
-检查命令：
-
-```bash
+npm run test:api
+npm run check:api
 npm run typecheck
 npm run lint
 npm run build
-npm run test:api
-npm run check:api
+npm run build:creator
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 ```
 
-最后一行是当前 Linux 云端的浏览器配置；用户电脑需要按 README 安装 Playwright Chromium，不要照抄 `/usr/bin/chromium` 到 Windows。E2E 使用独立临时 SQLite 和 8100/3100 端口，不应写入日常数据库。接口改变后执行 `npm run api:types`，不要手工编辑生成的 api-schema.ts。
+最后一条是当前 Linux 云环境命令，用户电脑需按 README 安装 Playwright 浏览器。E2E 独立启动 8100/3100/5174 端口并使用临时 SQLite，不写日常数据库。接口改变后运行 `npm run api:types`，不要手改生成类型。
 
-## 给下一对话的简短指令
+## 后续开发方向
 
-> 请继续开发剧集工场。先拉取 origin/work 并初始化 third_party/moyin-creator 子模块，阅读 docs/handoff.md、README 和架构文档，保留已完成的前端优化。现有技术栈是 Next.js + React + FastAPI，运行目标仍是用户本机，开发交接通过 Git 云端进行。我要把 MemeCalculate/moyin-creator 与自己的多方向 AI 剧集生产规划结合起来。上一个对话只完成上游调研和源码登记，尚未实现业务集成。请实际跑通集成和数据流，保留许可证与来源，不要重复搭建 Vue 框架，也不要把未测试的模型能力说成已经可用。
+先让用户在本机完成这一条文本创作流程，再按代表性镜头试制选择首个真实生产 Provider 或程序动画引擎。接入真实模型前，需要落实密钥保管、任务状态、超时/未知结果恢复、预算和资产存储。不要把三个生产 Profile 或文本创作接入等同于三条媒体生产线均已实现。
+
+后续云端会话仍通过 Git 拉取最新 `work` 并初始化固定子模块；先核对状态、保留已有改动，再读本文和接入说明。

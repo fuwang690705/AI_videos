@@ -548,6 +548,90 @@
         }
       }
     },
+    "/api/v1/creation/projects/{project_id}/snapshot": {
+      "get": {
+        "tags": [
+          "creation"
+        ],
+        "summary": "Snapshot",
+        "operationId": "snapshot_api_v1_creation_projects__project_id__snapshot_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreationSnapshot"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/creation/imports": {
+      "post": {
+        "tags": [
+          "creation"
+        ],
+        "summary": "Save Copy",
+        "operationId": "save_copy_api_v1_creation_imports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreationImport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectRead"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health/live": {
       "get": {
         "tags": [
@@ -601,6 +685,200 @@
   },
   "components": {
     "schemas": {
+      "CreationEpisode": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "synopsis": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Synopsis",
+            "default": ""
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "scenes": {
+            "items": {
+              "$ref": "#/components/schemas/CreationScene"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Scenes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "title",
+          "id",
+          "scenes"
+        ],
+        "title": "CreationEpisode"
+      },
+      "CreationImport": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Request Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/CreationSnapshot"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "request_id",
+          "name",
+          "snapshot"
+        ],
+        "title": "CreationImport"
+      },
+      "CreationScene": {
+        "properties": {
+          "number": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Number"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Location",
+            "default": ""
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "shots": {
+            "items": {
+              "$ref": "#/components/schemas/CreationShot"
+            },
+            "type": "array",
+            "maxItems": 5000,
+            "title": "Shots"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "number",
+          "title",
+          "id",
+          "shots"
+        ],
+        "title": "CreationScene"
+      },
+      "CreationShot": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "visual_description": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Visual Description",
+            "default": ""
+          },
+          "dialogue": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Dialogue",
+            "default": ""
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Duration Seconds",
+            "default": 5
+          },
+          "number": {
+            "type": "integer",
+            "maximum": 100000.0,
+            "minimum": 1.0,
+            "title": "Number"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "details": {
+            "$ref": "#/components/schemas/ShotDetails"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "title",
+          "number",
+          "id",
+          "details"
+        ],
+        "title": "CreationShot"
+      },
+      "CreationSnapshot": {
+        "properties": {
+          "schema_version": {
+            "type": "integer",
+            "const": 1,
+            "title": "Schema Version"
+          },
+          "project": {
+            "$ref": "#/components/schemas/ProjectCreate"
+          },
+          "episodes": {
+            "items": {
+              "$ref": "#/components/schemas/CreationEpisode"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "title": "Episodes"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "schema_version",
+          "project",
+          "episodes"
+        ],
+        "title": "CreationSnapshot"
+      },
       "EpisodeCreate": {
         "properties": {
           "number": {
@@ -984,6 +1262,37 @@
           "number"
         ],
         "title": "ShotCreate"
+      },
+      "ShotDetails": {
+        "properties": {
+          "action_summary": {
+            "type": "string",
+            "maxLength": 10000,
+            "title": "Action Summary",
+            "default": ""
+          },
+          "shot_size": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Shot Size",
+            "default": ""
+          },
+          "camera_movement": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Camera Movement",
+            "default": "none"
+          },
+          "special_technique": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Special Technique",
+            "default": "none"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ShotDetails"
       },
       "ShotRead": {
         "properties": {

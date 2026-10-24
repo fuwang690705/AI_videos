@@ -1825,3 +1825,11 @@ svg {
     scroll-behavior: auto !important;
   }
 }
+/* Isolated Moyin browser module */
+.creator-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 20px 0 12px; }
+.creator-toolbar label { display: grid; gap: 8px; flex: 1; min-width: 180px; font-size: 13px; }
+.creator-toolbar input { min-width: 0; padding: 12px; border: 1px solid #dedfe6; border-radius: 10px; background: white; }
+.creator-scope { font-size: 13px; color: #777581; line-height: 1.8; margin: 14px 0; }
+.creator-frame { width: 100%; height: 1000px; border: 1px solid #e2e3e9; border-radius: 16px; background: white; margin-top: 16px; }
+.creator-saved { background: #e9f5d5; padding: 16px; border-radius: 12px; font-size: 14px; margin-top: 12px; }
+.creator-saved a { display: inline-block; margin-left: 12px; text-decoration: underline; }

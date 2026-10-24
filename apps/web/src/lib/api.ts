@@ -9,6 +9,7 @@ export type Shot = Schemas["ShotRead"];
 export type Profile = Schemas["ProductionProfile"];
 export type ProductionType = Schemas["ProductionType"];
 export type Overview = Schemas["OverviewRead"];
+export type CreationSnapshot = Schemas["CreationSnapshot"];
 
 export const directionLabels: Record<ProductionType, string> = {
   MANGA: "AI 漫剧",
@@ -28,6 +29,7 @@ async function request<T>(
       headers: body === undefined ? {} : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
     });
   } catch {
     throw new Error("无法连接服务，请检查 API 是否已启动。");
@@ -37,13 +39,25 @@ async function request<T>(
     const detail = data?.detail;
     if (typeof detail === "string") throw new Error(detail);
     if (Array.isArray(detail))
-      throw new Error("请检查必填字段、编号和文本长度。");
+      throw new Error(
+        `请检查必填字段、编号、文本长度和整数秒时长。${detail
+          .slice(0, 3)
+          .map(
+            (item: { loc?: (string | number)[]; msg?: string }) =>
+              `${item.loc?.slice(1).join(".")}: ${item.msg}`,
+          )
+          .join("；")}`,
+      );
     throw new Error("服务暂时不可用，请检查 API 和数据库迁移。");
   }
   return data as T;
 }
 
 export const api = {
+  creationSnapshot: (id: string) =>
+    request<CreationSnapshot>(`/creation/projects/${id}/snapshot`),
+  saveCreationCopy: (data: Schemas["CreationImport"]) =>
+    request<Project>("/creation/imports", data),
   overview: () => request<Overview>("/overview"),
   profiles: () => request<Profile[]>("/production-profiles"),
   projects: (q = "", offset = 0) =>

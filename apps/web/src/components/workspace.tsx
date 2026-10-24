@@ -79,7 +79,9 @@ export function Workspace({ projectId }: { projectId: string }) {
               "从剧集和场景开始，逐步完善你的故事分镜。"}
           </p>
         </div>
-        <span className="draft-tag">筹备中</span>
+        <Link className="button primary" href={`/projects/${projectId}/create`}>
+          <Clapperboard size={17} />进入魔因创作
+        </Link>
       </section>
       <div className="workspace-layout">
         <aside className="episode-panel">
