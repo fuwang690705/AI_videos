@@ -5,4 +5,5 @@ apps/web/src/lib/api-schema.ts
 packages/contracts/openapi.json
 AI剧集内容生产平台_多方向架构方案.md
 package-lock.json
+third_party/
 

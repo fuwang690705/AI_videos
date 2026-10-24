@@ -24,16 +24,18 @@ const directions = [
 export function ProjectDialog({
   onClose,
   onCreated,
+  initialDirection = "MANGA",
 }: {
   onClose: () => void;
   onCreated: () => void;
+  initialDirection?: ProductionType;
 }) {
   const {
     data: profiles,
     error: profileError,
     mutate,
   } = useSWR("profiles", api.profiles);
-  const [direction, setDirection] = useState<ProductionType>("MANGA");
+  const [direction, setDirection] = useState<ProductionType>(initialDirection);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const available =

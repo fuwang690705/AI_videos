@@ -35,6 +35,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <nav aria-label="主导航">
           <Link
             href="/"
+            aria-label="项目中心"
+            aria-current={
+              pathname === "/" || pathname.startsWith("/projects/")
+                ? "page"
+                : undefined
+            }
             className={`nav-item ${pathname === "/" || pathname.startsWith("/projects/") ? "active" : ""}`}
           >
             <FolderKanban size={19} />
@@ -42,6 +48,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </Link>
           <Link
             href="/settings"
+            aria-label="生产配置"
+            aria-current={pathname === "/settings" ? "page" : undefined}
             className={`nav-item ${pathname === "/settings" ? "active" : ""}`}
           >
             <SlidersHorizontal size={19} />

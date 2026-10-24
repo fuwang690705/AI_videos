@@ -1,0 +1,3 @@
+[submodule "third_party/moyin-creator"]
+	path = third_party/moyin-creator
+	url = https://github.com/MemeCalculate/moyin-creator.git

@@ -17,7 +17,13 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { api, directionLabels, errorMessage } from "@/lib/api";
+import {
+  api,
+  directionLabels,
+  errorMessage,
+  type ProductionType,
+} from "@/lib/api";
+import { CreationHero } from "./creation-hero";
 import { ProjectDialog } from "./project-dialog";
 import { ErrorPanel, Loading } from "./ui";
 
@@ -28,7 +34,7 @@ const directionIcons = {
 };
 
 export function Dashboard() {
-  const [creating, setCreating] = useState(false);
+  const [creating, setCreating] = useState<ProductionType | null>(null);
   const [query, setQuery] = useState("");
   const [offset, setOffset] = useState(0);
   const deferredQuery = useDeferredValue(query);
@@ -52,11 +58,12 @@ export function Dashboard() {
           </h1>
           <p>每一个好故事，都值得被看见。让创作从这里开始。</p>
         </div>
-        <button className="button primary" onClick={() => setCreating(true)}>
+        <button className="button primary" onClick={() => setCreating("MANGA")}>
           <Plus size={18} />
           新建项目
         </button>
       </section>
+      <CreationHero onCreate={setCreating} />
       <section className="metrics" aria-label="制作概览">
         {metrics.map(({ label, value, icon: Icon }, index) => (
           <div className="metric" key={label}>
@@ -122,7 +129,7 @@ export function Dashboard() {
             ) : (
               <button
                 className="button primary"
-                onClick={() => setCreating(true)}
+                onClick={() => setCreating("MANGA")}
               >
                 <Plus size={17} />
                 创建第一个项目
@@ -216,13 +223,14 @@ export function Dashboard() {
       </section>
       <div className="bottom-note">
         <span className="status-dot" />
-        项目与分镜已连接数据库<span>·</span>媒体生成能力将在后续接入
+        从故事到分镜，一步一步接近你的作品<span>·</span>媒体生成待接入
       </div>
       {creating && (
         <ProjectDialog
-          onClose={() => setCreating(false)}
+          initialDirection={creating}
+          onClose={() => setCreating(null)}
           onCreated={() => {
-            setCreating(false);
+            setCreating(null);
             setQuery("");
             setOffset(0);
             void projects.mutate();

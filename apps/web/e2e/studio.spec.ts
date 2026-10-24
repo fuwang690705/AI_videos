@@ -70,3 +70,60 @@ test("生产配置明确显示生成尚未接入", async ({ page }) => {
     3,
   );
 });
+
+test("创作入口绑定所选方向，项目可搜索且首页适配窄屏", async ({
+  page,
+}, testInfo) => {
+  const suffix = Date.now();
+  await page.goto("/");
+  for (const [label, type] of [
+    ["AI 漫剧", "MANGA"],
+    ["沙雕动漫", "MEME_ANIMATION"],
+    ["AI 真人剧", "REALISTIC"],
+  ]) {
+    await page
+      .getByRole("button", { name: `创建${label}项目`, exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: new RegExp(label), pressed: true }),
+    ).toBeVisible();
+    await page.getByLabel("项目名称").fill(`${label}-${suffix}`);
+    const response = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/v1/projects") &&
+        response.request().method() === "POST",
+    );
+    await page.getByRole("button", { name: "创建项目", exact: true }).click();
+    const result = await response;
+    expect(result.ok()).toBe(true);
+    expect((await result.json()).production_type).toBe(type);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  }
+  await page.getByLabel("搜索项目").fill(String(suffix));
+  await expect(page.locator(".project-card")).toHaveCount(3);
+  await page.screenshot({
+    path: testInfo.outputPath("dashboard-desktop.png"),
+    fullPage: true,
+  });
+  for (const width of [768, 390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(
+      page.getByRole("heading", { name: "项目中心." }),
+    ).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  }
+  await page.screenshot({
+    path: testInfo.outputPath("dashboard-mobile.png"),
+    fullPage: true,
+  });
+  await page.getByLabel("搜索项目").fill(`no-match-${suffix}`);
+  await expect(
+    page.getByRole("heading", { name: "没有找到相关项目" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "清空搜索" }).click();
+  await expect(page.locator(".project-card").first()).toBeVisible();
+});

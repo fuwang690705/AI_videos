@@ -1,9 +1,15 @@
 "use client";
 
 import useSWR from "swr";
-import { BookOpen, Check, CircleDashed, Layers3 } from "lucide-react";
+import { BookOpen, Check, CircleDashed, Laugh, Video } from "lucide-react";
 import { api, directionLabels, errorMessage } from "@/lib/api";
 import { ErrorPanel, Loading } from "./ui";
+
+const profileIcons = {
+  MANGA: BookOpen,
+  MEME_ANIMATION: Laugh,
+  REALISTIC: Video,
+};
 
 export function Settings() {
   const profiles = useSWR("profiles", api.profiles);
@@ -28,40 +34,48 @@ export function Settings() {
         <Loading />
       ) : (
         <div className="profile-grid">
-          {profiles.data.map((profile) => (
-            <article className="profile-card" key={profile.id}>
-              <div className="profile-icon">
-                <Layers3 size={24} />
-              </div>
-              <span className="eyebrow">
-                {directionLabels[profile.production_type]}
-              </span>
-              <h2>{profile.name}</h2>
-              <p>{profile.description}</p>
-              <dl>
-                <div>
-                  <dt>配置版本</dt>
-                  <dd>v{profile.version}</dd>
+          {profiles.data.map((profile) => {
+            const Icon = profileIcons[profile.production_type];
+            return (
+              <article
+                className={`profile-card profile-${profile.production_type.toLowerCase()}`}
+                key={profile.id}
+              >
+                <div className="profile-icon">
+                  <Icon size={24} />
                 </div>
-                <div>
-                  <dt>渲染引擎</dt>
-                  <dd>{profile.renderer}</dd>
-                </div>
-                <div>
-                  <dt>视频模式</dt>
-                  <dd>
-                    {profile.video_mode === "procedural"
-                      ? "程序动画"
-                      : "生成式视频"}
-                  </dd>
-                </div>
-              </dl>
-              <span className="pending-tag">
-                <CircleDashed size={14} />
-                {profile.generation_enabled ? "已启用生成" : "生成引擎尚未接入"}
-              </span>
-            </article>
-          ))}
+                <span className="eyebrow">
+                  {directionLabels[profile.production_type]}
+                </span>
+                <h2>{profile.name}</h2>
+                <p>{profile.description}</p>
+                <dl>
+                  <div>
+                    <dt>配置版本</dt>
+                    <dd>v{profile.version}</dd>
+                  </div>
+                  <div>
+                    <dt>渲染引擎</dt>
+                    <dd>{profile.renderer}</dd>
+                  </div>
+                  <div>
+                    <dt>视频模式</dt>
+                    <dd>
+                      {profile.video_mode === "procedural"
+                        ? "程序动画"
+                        : "生成式视频"}
+                    </dd>
+                  </div>
+                </dl>
+                <span className="pending-tag">
+                  <CircleDashed size={14} />
+                  {profile.generation_enabled
+                    ? "已启用生成"
+                    : "生成引擎尚未接入"}
+                </span>
+              </article>
+            );
+          })}
         </div>
       )}
       <div className="foundation-note">

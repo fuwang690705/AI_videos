@@ -31,6 +31,27 @@ compose.yaml               可选 PostgreSQL、Temporal 开发服务
 
 总体架构见 [多方向架构方案](./AI剧集内容生产平台_多方向架构方案.md)。实际完成范围见 [实施状态](./docs/implementation-status.md)。
 
+## 云端会话交接
+
+项目源码、前端优化和交接说明通过 Git 的 `work` 分支共享。不同云端会话的 `/workspace` 不保证互通，不需要从用户电脑上传文件。
+
+已有项目目录时，在项目根目录执行：
+
+```bash
+git fetch origin work
+git switch work
+git pull --ff-only origin work
+git submodule update --init --recursive
+```
+
+新环境可直接执行：
+
+```bash
+git clone --branch work --recurse-submodules https://github.com/fuwang690705/AI_videos.git
+```
+
+请先读 [交接说明](./docs/handoff.md)。`third_party/moyin-creator` 是固定版本的魔因漫创上游源码，保留其 AGPL 许可证与版权；目前完成调研与源码登记，业务集成仍待实现。
+
 ## 快速启动：无需 Docker
 
 前置条件：Node.js 22+、npm 10+、Python 3.12+、[uv](https://docs.astral.sh/uv/)。Python 版本请与依赖兼容，推荐 3.12。命令均在项目根目录执行。
