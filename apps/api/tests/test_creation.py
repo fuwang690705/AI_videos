@@ -1,11 +1,18 @@
+import hashlib
+import json
 from copy import deepcopy
 from uuid import uuid4
 
 import pytest
 from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
+from studio.core.config import get_settings
+from studio.core.database import build_engine
 from studio.modules.catalog.models import Shot
+from studio.modules.creation.models import CreationImportRecord
+from studio.modules.creation.schemas import CreationImport
 
 
 def snapshot_payload(production_type="MANGA", profile_id="manga-standard@1.0"):
@@ -54,6 +61,31 @@ def snapshot_payload(production_type="MANGA", profile_id="manga-standard@1.0"):
 
 def import_payload(snapshot):
     return {"request_id": str(uuid4()), "name": "创作副本", "snapshot": snapshot}
+
+
+@pytest.mark.parametrize("omit_story", [False, True])
+def test_legacy_retry_identity_survives_optional_snapshot_fields(client, omit_story):
+    payload = import_payload(snapshot_payload())
+    first = client.post("/api/v1/creation/imports", json=payload)
+    assert first.status_code == 201
+    parsed = CreationImport.model_validate(payload)
+    legacy = parsed.model_dump(mode="json")
+    del legacy["snapshot"]["media"]
+    if omit_story:
+        del legacy["snapshot"]["story"]
+    engine = build_engine(get_settings().database_url)
+    with Session(engine) as db:
+        record = db.get(CreationImportRecord, parsed.request_id)
+        record.fingerprint = hashlib.sha256(
+            json.dumps(legacy, sort_keys=True, ensure_ascii=False).encode()
+        ).hexdigest()
+        db.commit()
+    engine.dispose()
+    repeated = client.post("/api/v1/creation/imports", json=payload)
+    assert repeated.status_code == 201
+    assert repeated.json()["id"] == first.json()["id"]
+    payload["name"] = "不同内容仍拒绝"
+    assert client.post("/api/v1/creation/imports", json=payload).status_code == 409
 
 
 @pytest.mark.parametrize("direction", ["MANGA", "MEME_ANIMATION", "REALISTIC"])

@@ -12,6 +12,7 @@ from studio.modules.catalog.schemas import (
     ShotCreate,
     Summary,
 )
+from studio.modules.media.schemas import MediaSnapshot
 from studio.modules.story.schemas import StoryContent
 
 
@@ -44,6 +45,7 @@ class CreationSnapshot(InputModel):
     project: ProjectCreate
     episodes: list[CreationEpisode] = Field(max_length=100)
     story: StoryContent | None = None
+    media: MediaSnapshot | None = None
 
     @model_validator(mode="after")
     def validate_tree(self) -> Self:

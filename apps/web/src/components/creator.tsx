@@ -215,7 +215,7 @@ export function Creator({ projectId }: { projectId: string }) {
           <h1>
             让镜头更有故事<span className="heading-dot">.</span>
           </h1>
-          <p>编辑分镜后另存为新项目，保留原项目和生产方向配置。</p>
+          <p>编辑分镜后另存为新项目，保留原项目、设定与已绑定素材。</p>
         </div>
       </section>
       <div className="creator-toolbar">
@@ -252,7 +252,8 @@ export function Creator({ projectId }: { projectId: string }) {
         </button>
       </div>
       <p className="creator-scope">
-        当前支持分镜标题、画面、动作、对白、整数秒时长和镜头参数；可添加或删除分镜。角色、媒体、模型调用与视频生成尚未接入。
+        当前支持分镜文本、时长和镜头参数编辑。回存后可绑定本地图片与配音并合成样片；AI
+        媒体生成尚未接入。
       </p>
       {phase === "connecting" && <p role="status">正在连接本地创作模块…</p>}
       {error && <ErrorPanel message={error} />}
@@ -263,6 +264,7 @@ export function Creator({ projectId }: { projectId: string }) {
         <div className="creator-saved" role="status">
           已回存为「{saved.name}」，原项目保留。
           <Link href={`/projects/${saved.id}`}>打开已保存副本 →</Link>
+          <Link href={`/projects/${saved.id}/media`}>为此副本绑定素材 →</Link>
         </div>
       )}
       {frameUrl && (

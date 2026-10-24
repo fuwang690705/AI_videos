@@ -180,12 +180,12 @@ function StoryEditor({
         <Link href={`/projects/${project.id}`}>
           <b>02</b>剧集与分镜
         </Link>
-        <span className="pending">
-          <b>03</b>素材与媒体 · 待接入
-        </span>
-        <span className="pending">
-          <b>04</b>剪辑与交付 · 待接入
-        </span>
+        <Link href={`/projects/${project.id}/media`}>
+          <b>03</b>素材与样片
+        </Link>
+        <Link href={`/projects/${project.id}/media#renders`}>
+          <b>04</b>样片确认与下载
+        </Link>
       </nav>
       <div className="story-layout">
         <section className="story-source" aria-label="故事原文">

@@ -11,6 +11,11 @@ export type ProductionType = Schemas["ProductionType"];
 export type Overview = Schemas["OverviewRead"];
 export type CreationSnapshot = Schemas["CreationSnapshot"];
 export type StoryDraft = Schemas["StoryRead"];
+export type MediaAsset = Schemas["AssetRead"];
+export type MediaBinding = Schemas["BindingRead"];
+export type RenderJob = Schemas["RenderRead"];
+export type RenderReview = Schemas["ReviewRead"];
+export type MediaCapabilities = Schemas["MediaCapabilities"];
 
 export const directionLabels: Record<ProductionType, string> = {
   MANGA: "AI 漫剧",
@@ -55,6 +60,65 @@ async function request<T>(
 }
 
 export const api = {
+  mediaCapabilities: () => request<MediaCapabilities>("/media/capabilities"),
+  mediaAssets: (id: string) =>
+    request<MediaAsset[]>(`/media/projects/${id}/assets`),
+  mediaBindings: (id: string) =>
+    request<MediaBinding[]>(`/media/projects/${id}/bindings`),
+  bindMedia: (
+    projectId: string,
+    shotId: string,
+    data: Schemas["BindingUpdate"],
+  ) =>
+    request<MediaBinding>(
+      `/media/projects/${projectId}/shots/${shotId}`,
+      data,
+      "PUT",
+    ),
+  renders: (id: string) =>
+    request<RenderJob[]>(`/media/projects/${id}/renders`),
+  createRender: (id: string, data: Schemas["RenderCreate"]) =>
+    request<RenderJob>(`/media/projects/${id}/renders`, data),
+  renderReviews: (id: string, jobId: string) =>
+    request<RenderReview[]>(`/media/projects/${id}/renders/${jobId}/reviews`),
+  reviewRender: (id: string, jobId: string, data: Schemas["ReviewCreate"]) =>
+    request<RenderReview>(
+      `/media/projects/${id}/renders/${jobId}/reviews`,
+      data,
+    ),
+  uploadMedia: async (
+    id: string,
+    kind: "image" | "audio",
+    file: File,
+    sourceNote: string,
+  ): Promise<MediaAsset> => {
+    if (file.size > 8 * 1024 * 1024)
+      throw new Error("单个文件最多 8 MB，请先压缩或按镜头拆分。");
+    const params = new URLSearchParams({
+      kind,
+      name: file.name,
+      source_note: sourceNote,
+    });
+    let response: Response;
+    try {
+      response = await fetch(`/api/v1/media/projects/${id}/assets?${params}`, {
+        method: "POST",
+        body: file,
+        headers: { "Content-Type": "application/octet-stream" },
+        signal: AbortSignal.timeout(90_000),
+      });
+    } catch {
+      throw new Error("上传结果尚未确认，请刷新素材列表核对后重试。");
+    }
+    const data = await response.json().catch(() => null);
+    if (!response.ok)
+      throw new Error(
+        typeof data?.detail === "string"
+          ? data.detail
+          : "素材上传失败，请检查格式、文件大小和 FFmpeg 安装。",
+      );
+    return data as MediaAsset;
+  },
   story: (id: string) => request<StoryDraft>(`/story/projects/${id}`),
   saveStory: (id: string, data: Schemas["StoryUpdate"]) =>
     request<StoryDraft>(`/story/projects/${id}`, data, "PUT"),
@@ -91,3 +155,10 @@ export const api = {
 export const errorMessage = (error: unknown) =>
   error instanceof Error ? error.message : "操作失败，请稍后重试。";
 export const pad = (value: number) => String(value).padStart(2, "0");
+export const assetUrl = (projectId: string, assetId: string) =>
+  `/api/v1/media/projects/${projectId}/assets/${assetId}/file`;
+export const renderUrl = (
+  projectId: string,
+  jobId: string,
+  artifact: "video" | "srt" | "vtt" | "manifest",
+) => `/api/v1/media/projects/${projectId}/renders/${jobId}/files/${artifact}`;

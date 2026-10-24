@@ -19,6 +19,7 @@ from studio.modules.creation.schemas import (
     CreationSnapshot,
     ShotDetails,
 )
+from studio.modules.media.service import copy_media, export_media
 from studio.modules.production.profiles import get_profile
 from studio.modules.story.models import StoryDraft
 
@@ -71,6 +72,7 @@ def export_snapshot(db: Session, project_id: UUID) -> CreationSnapshot:
     return CreationSnapshot(
         schema_version=1,
         story=story.content if story else None,
+        media=export_media(db, project_id),
         project=ProjectCreate(
             name=project.name,
             synopsis=project.synopsis,
@@ -91,12 +93,25 @@ def export_snapshot(db: Session, project_id: UUID) -> CreationSnapshot:
 
 
 def import_copy(db: Session, data: CreationImport) -> Project:
-    fingerprint = hashlib.sha256(
-        json.dumps(data.model_dump(mode="json"), sort_keys=True, ensure_ascii=False).encode()
-    ).hexdigest()
+    payload = data.model_dump(mode="json")
+
+    def digest(value):
+        return hashlib.sha256(
+            json.dumps(value, sort_keys=True, ensure_ascii=False).encode()
+        ).hexdigest()
+
+    fingerprint = digest(payload)
+    compatible_fingerprints = {fingerprint}
+    # Preserve retry identities across additive optional v1 snapshot fields.
+    if payload["snapshot"]["media"] is None:
+        del payload["snapshot"]["media"]
+        compatible_fingerprints.add(digest(payload))
+        if payload["snapshot"]["story"] is None:
+            del payload["snapshot"]["story"]
+            compatible_fingerprints.add(digest(payload))
 
     def previous_result(record):
-        if record.fingerprint != fingerprint:
+        if record.fingerprint not in compatible_fingerprints:
             raise HTTPException(status_code=409, detail="保存标识已被其他内容使用，请重新另存")
         return require_record(db, Project, record.project_id)
 
@@ -109,6 +124,7 @@ def import_copy(db: Session, data: CreationImport) -> Project:
         raise HTTPException(status_code=422, detail="生产配置不存在或与内容方向不匹配")
     project = Project(**{**source.model_dump(), "name": data.name})
     details = {}
+    shot_map = {}
     try:
         db.add(project)
         db.flush()
@@ -135,7 +151,10 @@ def import_copy(db: Session, data: CreationImport) -> Project:
                     )
                     db.add(shot)
                     db.flush()
+                    shot_map[shot_data.id] = shot.id
                     details[str(shot.id)] = shot_data.details.model_dump()
+        if data.snapshot.media is not None:
+            copy_media(db, data.snapshot.media, project.id, shot_map)
         db.add(
             CreationImportRecord(
                 request_id=data.request_id,

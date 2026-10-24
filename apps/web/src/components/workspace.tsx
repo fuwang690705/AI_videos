@@ -82,6 +82,13 @@ export function Workspace({ projectId }: { projectId: string }) {
         <div className="workspace-actions">
           <Link
             className="button secondary"
+            href={`/projects/${projectId}/media`}
+          >
+            <Clapperboard size={17} />
+            素材与样片
+          </Link>
+          <Link
+            className="button secondary"
             href={`/projects/${projectId}/story`}
           >
             <FileText size={17} />

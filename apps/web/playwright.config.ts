@@ -4,7 +4,11 @@ import os from "node:os";
 
 // 独立临时 SQLite，避免端到端测试写入日常开发数据库。
 const testDatabase = `sqlite:///${path.join(os.tmpdir(), `studio-e2e-${process.pid}.db`).replaceAll("\\", "/")}`;
-const env = { STUDIO_DATABASE_URL: testDatabase, STUDIO_ENVIRONMENT: "test" };
+const env = {
+  STUDIO_DATABASE_URL: testDatabase,
+  STUDIO_ENVIRONMENT: "test",
+  STUDIO_MEDIA_ROOT: path.join(os.tmpdir(), `studio-e2e-media-${process.pid}`),
+};
 
 export default defineConfig({
   testDir: "./e2e",
@@ -44,6 +48,14 @@ export default defineConfig({
       },
       reuseExistingServer: false,
       timeout: 90_000,
+    },
+    {
+      command:
+        "uv run --directory ../api python -m studio.modules.media.worker",
+      wait: { stdout: /STUDIO_MEDIA_WORKER_READY/ },
+      env,
+      reuseExistingServer: false,
+      timeout: 60_000,
     },
   ],
 });

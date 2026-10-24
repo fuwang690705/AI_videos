@@ -29,6 +29,7 @@ export async function importSnapshot(snapshot: Snapshot): Promise<string> {
   const identity = { ...snapshot };
   // Optional story metadata was added to v1. Existing text-only drafts retain their identity.
   if (identity.story == null) delete identity.story;
+  if (identity.media == null) delete identity.media;
   const digest = await crypto.subtle.digest(
     "SHA-256",
     new TextEncoder().encode(JSON.stringify(identity)),
@@ -105,8 +106,17 @@ export function exportSnapshot(base: Snapshot, projectId: string): Snapshot {
   const project = useScriptStore.getState().projects[projectId];
   if (!project?.scriptData) throw new Error("没有可回存的创作草稿");
   const shots = project.shots as StudioShot[];
+  const retained = new Set(shots.map((shot) => shot.id));
   return {
     ...base,
+    media: base.media
+      ? {
+          ...base.media,
+          bindings: base.media.bindings.filter((binding) =>
+            retained.has(binding.shot_id),
+          ),
+        }
+      : null,
     episodes: base.episodes.map((ep) => ({
       ...ep,
       scenes: ep.scenes.map((sc) => ({

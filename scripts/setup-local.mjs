@@ -10,7 +10,7 @@ try {
   await run("uv", ["sync", "--directory", "apps/api", "--locked"]);
   await run("npm", ["run", "db:migrate"]);
   console.log(
-    "安装与迁移完成。运行 npm run dev:local 启动本地工作台与创作模块。",
+    "安装与迁移完成。运行 npm run dev:local 启动工作台、创作模块与本地渲染 Worker；样片合成需本机安装 FFmpeg。",
   );
 } catch (error) {
   console.error(error.message);

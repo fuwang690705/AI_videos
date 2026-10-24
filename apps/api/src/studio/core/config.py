@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     temporal_address: str = "127.0.0.1:7233"
     temporal_namespace: str = "default"
     temporal_task_queue: str = "studio-production"
+    media_root: Path = API_ROOT / ".data" / "media"
+    ffmpeg_path: str = "ffmpeg"
+    ffprobe_path: str = "ffprobe"
 
 
 @lru_cache

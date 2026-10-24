@@ -56,6 +56,18 @@ try {
       ],
       ["工作台", "npm", ["run", "dev"]],
       ["创作模块", "npm", ["--prefix", "apps/creator", "run", "dev"]],
+      [
+        "本地渲染 Worker",
+        "uv",
+        [
+          "run",
+          "--directory",
+          "apps/api",
+          "python",
+          "-m",
+          "studio.modules.media.worker",
+        ],
+      ],
     ];
     for (const [label, command, args] of commands) {
       const child = start(command, args, {
@@ -79,7 +91,7 @@ try {
       });
     }
     console.log(
-      "本地工作台：http://127.0.0.1:3000 · API：8000 · 创作模块：5173。Ctrl+C 停止全部服务。",
+      "本地工作台：http://127.0.0.1:3000 · API：8000 · 创作模块：5173 · 本地渲染 Worker。Ctrl+C 停止全部服务。",
     );
   }
 } catch (error) {

@@ -23,6 +23,7 @@ def client(request, tmp_path, monkeypatch):
     )
     monkeypatch.setenv("STUDIO_DATABASE_URL", database_url)
     monkeypatch.setenv("STUDIO_ENVIRONMENT", "test")
+    monkeypatch.setenv("STUDIO_MEDIA_ROOT", str(tmp_path / "media"))
     get_settings.cache_clear()
     config = Config(str(API_ROOT / "alembic.ini"))
     command.upgrade(config, "head")

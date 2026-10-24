@@ -267,7 +267,7 @@ function Editor({ base, projectId }: { base: Snapshot; projectId: string }) {
                 动作、对白、景别和镜头运动在右侧编辑。点击铅笔进入编辑，点击保存图标提交单镜头修改。
               </p>
               <p>
-                当前模块只接入文本创作；未接入模型、媒体生成、资产库及成片导出。
+                图片和配音在项目的「素材与样片」页绑定。本编辑器只编辑文本，不调用生成模型。
               </p>
             </section>
             <section className="upstream-shot-panel" aria-label="魔因镜头属性">

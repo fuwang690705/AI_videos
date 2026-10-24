@@ -30,6 +30,7 @@ jobs:
           enable-cache: true
           version: "0.12.23"
       - run: uv python install 3.12
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: uv sync --directory apps/api --locked --python 3.12
       - run: npm ci
       - run: npm ci --prefix apps/creator --workspaces=false

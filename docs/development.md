@@ -4,6 +4,8 @@
 
 完整文本创作接入使用 `npm run setup:local` 安装，再用 `npm run dev:local` 统一启动本机工作台、API 和魔因创作服务；无需 Docker。独立 React 18 包、快照字段、消息边界和许可说明见 [魔因接入说明](./creation-integration.md)。
 
+统一启动现在还包含独立本地渲染 Worker，单独命令为 `npm run dev:render`。素材与样片需要 FFmpeg/ffprobe；上传为原始二进制请求，接口契约明确声明 `application/octet-stream`。数据与文件存储、任务和输出限制见 [本地媒体说明](./local-media.md)。
+
 根目录 `.env` 由 Python 配置层和 Next.js 配置层读取。前端浏览器通过同源 `/api/v1` 请求，由 Next.js 转发给 `STUDIO_API_ORIGIN`，不把服务端配置或密钥打包给浏览器。
 
 API 启动不自动建表；必须显式运行 Alembic 迁移。`/health/live` 只检查进程，`/health/ready` 检查数据库和当前迁移版本。改动数据库后需增加迁移，并同步调整迁移就绪检查。
